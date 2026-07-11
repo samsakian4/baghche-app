@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#10160D" />
+<title>باغچه‌ی من</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+  :root{
+    --bg-0:#0D1209; --bg-1:#141C0E; --bg-2:#1A2414;
+    --line:#ffffff14; --line-soft:#ffffff0a;
+    --text:#EDEAE0; --text-dim:#9FAE8C; --text-faint:#6E7C63;
+    --lime:#A8C256; --water:#5B9C9C; --feed:#D4A24C; --bad:#E2725B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; font-family:'Vazirmatn',Tahoma,sans-serif;}
+  html,body{background:var(--bg-0); color:var(--text); min-height:100vh;}
+  button{cursor:pointer; font-family:inherit; border:none;}
+  input,select{font-family:inherit;}
+  ::selection{background:#A8C25655;}
+
+  body{
+    background:
+      radial-gradient(ellipse 700px 400px at 15% -5%, #2A3A1A55, transparent),
+      radial-gradient(ellipse 600px 500px at 110% 20%, #1E2E1655, transparent),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, #10170B 100%);
+    position:relative; overflow-x:hidden;
+  }
+
+  .vine{position:fixed; opacity:.10; pointer-events:none; z-index:0;}
+  .vine.top{top:-40px; right:-30px; width:230px; transform:rotate(12deg);}
+  .vine.bottom{bottom:-30px; left:-40px; width:220px; transform:scaleX(-1) rotate(8deg);}
+
+  .wrap{max-width:480px; margin:0 auto; padding:18px 16px 110px; position:relative; z-index:1;}
+
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .brand{display:flex; align-items:center; gap:9px;}
+  .brand svg{animation:sway 4.5s ease-in-out infinite; transform-origin:50% 100%;}
+  @keyframes sway{0%,100%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}}
+  h1{font-size:19px; font-weight:800; letter-spacing:.2px;}
+
+  .notif-btn{display:flex; align-items:center; gap:6px; border-radius:20px; padding:7px 12px; font-size:12.5px; background:#ffffff0d; color:var(--text-dim); border:1px solid var(--line);}
+  .notif-btn.on{background:#A8C25620; color:var(--lime); border-color:#A8C25640;}
+
+  .notice{font-size:12px; color:#B8C4A8; background:var(--line-soft); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:14px; line-height:1.8;}
+
+  .hero{
+    background:linear-gradient(145deg, #1B2415 0%, #212C17 60%, #1B2415 100%);
+    border:1px solid #A8C25630; border-radius:20px; padding:18px; margin-bottom:18px;
+    box-shadow: 0 10px 30px -12px #00000080, inset 0 1px 0 #ffffff08;
+    position:relative; overflow:hidden;
+  }
+  .hero::before{content:""; position:absolute; inset:0; background:
+    radial-gradient(120px 90px at 90% -10%, #A8C25622, transparent);}
+  .hero-label{font-size:11.5px; color:var(--text-dim); font-weight:700; letter-spacing:.3px;}
+  .hero-body{display:flex; align-items:center; gap:14px; margin-top:8px;}
+  .hero-plant{font-size:17px; font-weight:700;}
+  .hero-task{font-size:13px; color:#B8C4A8; margin-top:2px;}
+  .hero-count{font-size:13.5px; margin-top:5px; font-weight:700;}
+  .hero-when{font-size:11px; color:var(--text-faint); margin-top:3px;}
+  .done-btn{margin-top:14px; width:100%; display:flex; align-items:center; justify-content:center; gap:6px;
+    background:linear-gradient(135deg,#B7CC66,#8FAE47); color:#12180F; border-radius:13px; padding:11px 0; font-weight:700; font-size:14px;}
+
+  .empty{text-align:center; color:var(--text-dim); font-size:13.5px; padding:38px 14px; border:1px dashed #ffffff22; border-radius:16px; line-height:1.9;}
+  .empty svg{margin-bottom:10px; opacity:.5;}
+
+  .plants{display:flex; flex-direction:column; gap:12px;}
+  .plant-card{background:linear-gradient(180deg,#ffffff08,#ffffff04); border:1px solid var(--line); border-radius:17px; padding:14px; backdrop-filter:blur(6px);}
+  .plant-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:9px;}
+  .plant-name{font-size:15px; font-weight:700; display:flex; align-items:center; gap:7px;}
+  .row-btns{display:flex; gap:6px;}
+  .chip-btn{display:flex; align-items:center; gap:4px; background:#ffffff0c; border:1px solid var(--line); color:var(--text); border-radius:10px; padding:6px 9px; font-size:11.5px;}
+  .chip-btn.danger{color:var(--bad);}
+
+  .task-row{display:flex; align-items:center; gap:10px; background:#ffffff05; border-radius:13px; padding:9px 10px; margin-top:8px;}
+  .task-info{flex:1; min-width:0;}
+  .task-label{font-size:13.5px; font-weight:600;}
+  .task-freq{font-size:11px; color:var(--text-faint); margin-top:1px;}
+  .task-when{font-size:10.5px; color:var(--text-faint); margin-top:1px;}
+  .task-count{font-size:11.5px; font-weight:700; white-space:nowrap;}
+  .check-btn{background:var(--lime); color:#12180F; border-radius:9px; width:30px; height:30px; display:flex; align-items:center; justify-content:center;}
+  .ghost-btn{background:transparent; color:var(--text-faint); width:30px; height:30px; display:flex; align-items:center; justify-content:center;}
+
+  .fab{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:8px;
+    background:linear-gradient(135deg,#B7CC66,#8FAE47); color:#12180F; border-radius:30px; padding:13px 24px; font-weight:700; font-size:14px;
+    box-shadow:0 10px 26px -8px #000000a0; z-index:10;}
+
+  .overlay{position:fixed; inset:0; background:#000000a0; display:flex; align-items:flex-end; justify-content:center; z-index:50; backdrop-filter:blur(2px);}
+  .modal{background:#171F11; border-radius:20px 20px 0 0; padding:20px; width:100%; max-width:480px; border:1px solid var(--line); border-bottom:none; max-height:88vh; overflow-y:auto;}
+  .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .modal-title{font-size:16px; font-weight:700;}
+  .field-label{font-size:12px; color:var(--text-dim); margin-bottom:5px; display:block;}
+  .input{width:100%; background:#ffffff0a; border:1px solid #ffffff18; color:var(--text); border-radius:11px; padding:11px 12px; font-size:14px; margin-bottom:11px; outline:none;}
+  .type-row{display:flex; gap:8px; margin-bottom:12px;}
+  .type-chip{flex:1; display:flex; align-items:center; justify-content:center; gap:5px; border:1px solid #ffffff20; border-radius:11px; padding:9px 4px; font-size:12.5px; background:transparent; color:var(--text-dim);}
+  .type-chip.active{color:var(--lime);}
+  .dt-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:11px;}
+  .dt-grid.time{grid-template-columns:1fr 1fr;}
+  .primary-btn{width:100%; background:linear-gradient(135deg,#B7CC66,#8FAE47); color:#12180F; border-radius:13px; padding:12px 0; font-weight:700; font-size:14px; margin-top:5px;}
+
+  .icon-ring{position:relative; flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<svg class="vine top" viewBox="0 0 200 200" fill="none"><path d="M10 190 C 60 150, 40 100, 90 90 C 140 80, 130 30, 180 10" stroke="#A8C256" stroke-width="4" stroke-linecap="round"/><circle cx="90" cy="90" r="9" fill="#A8C256"/><circle cx="180" cy="10" r="7" fill="#A8C256"/><circle cx="10" cy="190" r="7" fill="#A8C256"/></svg>
+<svg class="vine bottom" viewBox="0 0 200 200" fill="none"><path d="M10 190 C 60 150, 40 100, 90 90 C 140 80, 130 30, 180 10" stroke="#A8C256" stroke-width="4" stroke-linecap="round"/><circle cx="90" cy="90" r="9" fill="#A8C256"/><circle cx="180" cy="10" r="7" fill="#A8C256"/><circle cx="10" cy="190" r="7" fill="#A8C256"/></svg>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------------- Jalali (Shamsi) calendar conversion ---------------- */
+function div(a,b){return ~~(a/b);}
+function mod(a,b){return a - ~~(a/b)*b;}
+function jalCal(jy){
+  var breaks=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,2060,2097,2192,2262,2324,2394,2456,3178];
+  var bl=breaks.length, gy=jy+621, leapJ=-14, jp=breaks[0], jm,jump,leap,n,i;
+  for(i=1;i<bl;i+=1){ jm=breaks[i]; jump=jm-jp; if(jy<jm) break; leapJ=leapJ+div(jump,33)*8+div(mod(jump,33),4); jp=jm; }
+  n=jy-jp; leapJ=leapJ+div(n,33)*8+div(mod(n,33)+3,4);
+  if(mod(jump,33)===4 && jump-n===4) leapJ+=1;
+  var leapG=div(gy,4)-div((div(gy,100)+1)*3,4)-150;
+  var march=20+leapJ-leapG;
+  if(jump-n<6) n=n-jump+div(jump,33)*33;
+  leap=mod(mod(n+1,33)-1,4); if(leap===-1) leap=4;
+  return {leap:leap,gy:gy,march:march};
+}
+function g2d(gy,gm,gd){
+  var d=div((gy+div(gm-8,6)+100100)*1461,4)+div(153*mod(gm+9,12)+2,5)+gd-34840408;
+  d=d-div(div(gy+100100+div(gm-8,6),100)*3,4)+752;
+  return d;
+}
+function d2g(jdn){
+  var j,i,gd,gm,gy;
+  j=4*jdn+139361631;
+  j=j+div(div(4*jdn+183187720,146097)*3,4)*4-3908;
+  i=div(mod(j,1461),4)*5+308;
+  gd=div(mod(i,153),5)+1;
+  gm=mod(div(i,153),12)+1;
+  gy=div(j,1461)-100100+div(8-gm,6);
+  return {gy:gy,gm:gm,gd:gd};
+}
+function j2d(jy,jm,jd){ var r=jalCal(jy); return g2d(r.gy,3,r.march)+(jm-1)*31-div(jm,7)*(jm-7)+jd-1; }
+function d2j(jdn){
+  var gy=d2g(jdn).gy, jy=gy-621, r,jdn1f,jd,jm,k;
+  r=jalCal(jy); jdn1f=g2d(gy,3,r.march); k=jdn-jdn1f;
+  if(k>=0){ if(k<=185){ jm=1+div(k,31); jd=mod(k,31)+1; return {jy:jy,jm:jm,jd:jd}; } else { k-=186; } }
+  else { jy-=1; k+=179; if(r.leap===1) k+=1; }
+  jm=7+div(k,30); jd=mod(k,30)+1;
+  return {jy:jy,jm:jm,jd:jd};
+}
+function toJalali(gy,gm,gd){ return d2j(g2d(gy,gm,gd)); }
+function toGregorian(jy,jm,jd){ return d2g(j2d(jy,jm,jd)); }
+
+const JMONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const FA_DIGITS = ["۰","۱","۲","۳","۴","۵","۶","۷","۸","۹"];
+const toFa = (n) => String(n).replace(/[0-9]/g, d => FA_DIGITS[d]);
+const pad2 = (n) => String(n).padStart(2,"0");
+
+// build a local-time JS Date (device timezone) from jalali y/m/d + h/min
+function jalaliToDate(jy,jm,jd,h,min){
+  const g = toGregorian(jy,jm,jd);
+  return new Date(g.gy, g.gm-1, g.gd, h, min, 0, 0); // uses device local timezone
+}
+function dateToJalaliParts(date){
+  const j = toJalali(date.getFullYear(), date.getMonth()+1, date.getDate());
+  return { jy:j.jy, jm:j.jm, jd:j.jd, h:date.getHours(), min:date.getMinutes() };
+}
+function formatJalali(date){
+  const p = dateToJalaliParts(date);
+  return `${toFa(p.jd)} ${JMONTHS[p.jm-1]} ${toFa(p.jy)} - ${toFa(pad2(p.h))}:${toFa(pad2(p.min))}`;
+}
+
+/* ---------------- task model helpers ---------------- */
+const TASK_TYPES = {
+  water:{label:"آبیاری", color:"var(--water)"},
+  feed:{label:"کوددهی", color:"var(--feed)"},
+  custom:{label:"سفارشی", color:"var(--lime)"},
+};
+function intervalMs(v,u){ return (Number(v)||0) * (u==="hour" ? 3600000 : 86400000); }
+function computeStatus(task, now){
+  const anchor = new Date(task.startAt).getTime();
+  const ms = intervalMs(task.intervalValue, task.intervalUnit);
+  if(!ms || Number.isNaN(anchor)) return {occurrenceIndex:-1, occurrenceTime:anchor, nextTime:anchor, status:"upcoming"};
+  if(now < anchor) return {occurrenceIndex:-1, occurrenceTime:anchor, nextTime:anchor, status:"upcoming"};
+  const occurrenceIndex = Math.floor((now-anchor)/ms);
+  const occurrenceTime = anchor + occurrenceIndex*ms;
+  const acked = typeof task.ackIndex === "number" && task.ackIndex >= occurrenceIndex;
+  if(acked) return {occurrenceIndex, occurrenceTime, nextTime:anchor+(occurrenceIndex+1)*ms, status:"done"};
+  return {occurrenceIndex, occurrenceTime, nextTime:occurrenceTime, status:"due"};
+}
+function ringProgress(task, now){
+  const ms = intervalMs(task.intervalValue, task.intervalUnit);
+  if(!ms) return 0;
+  const s = computeStatus(task, now);
+  if(s.status==="upcoming") return 0;
+  const periodStart = s.status==="done" ? s.nextTime - ms : s.occurrenceTime;
+  return Math.min(1, Math.max(0, (now - periodStart)/ms));
+}
+function formatDuration(ms){
+  const abs = Math.abs(ms);
+  const days = Math.floor(abs/86400000), hours = Math.floor((abs%86400000)/3600000), mins = Math.floor((abs%3600000)/60000);
+  const parts=[];
+  if(days>0) parts.push(`${toFa(days)} روز`);
+  if(hours>0) parts.push(`${toFa(hours)} ساعت`);
+  if(days===0 && hours===0) parts.push(`${toFa(Math.max(mins,1))} دقیقه`);
+  return parts.join(" و ");
+}
+function beep(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type="sine"; o.frequency.value=660;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.5);
+    o.start(); o.stop(ctx.currentTime+0.55);
+  }catch(e){}
+}
+const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+/* ---------------- storage ---------------- */
+const STORE_KEY = "baghche_plants_v1";
+function loadPlants(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }catch(e){ return []; } }
+function savePlants(p){ localStorage.setItem(STORE_KEY, JSON.stringify(p)); }
+
+/* ---------------- icons (inline svg strings) ---------------- */
+const ICONS = {
+  leaf:`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A8C256" stroke-width="2" stroke-linecap="round"><path d="M11 20A7 7 0 0 1 4 13c0-4 3-9 8-13 5 4 8 9 8 13a7 7 0 0 1-7 7 5 5 0 0 1-2-11"/></svg>`,
+  drop:(c)=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M12 2s7 8 7 13a7 7 0 1 1-14 0c0-5 7-13 7-13z"/></svg>`,
+  sprout:(c)=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M12 22V13M12 13C12 8 8 6 4 6c0 5 3 7 8 7zM12 13c0-4 3-6 8-6 0 4-3 7-8 7z"/></svg>`,
+  custom:(c)=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M11 20A7 7 0 0 1 4 13c0-4 3-9 8-13 5 4 8 9 8 13a7 7 0 0 1-7 7 5 5 0 0 1-2-11"/></svg>`,
+  bell:(c)=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+  bellOff:(c)=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M8.7 3A6 6 0 0 1 18 8c0 2.9.4 4.9 1 6.3M17.8 17.8A9 9 0 0 1 3 17s3-2 3-9M13.7 21a2 2 0 0 1-3.4 0M3 3l18 18"/></svg>`,
+  plus:(c)=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  trash:(c)=>`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+  check:(c)=>`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  x:(c)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  edit:(c)=>`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
+};
+function typeIcon(type,color){ return type==="water"?ICONS.drop(color):type==="feed"?ICONS.sprout(color):ICONS.custom(color); }
+
+function ringSvg(type, progress, size, overdue){
+  const color = overdue ? "var(--bad)" : TASK_TYPES[type].color;
+  const r = size/2 - 3.5, c = 2*Math.PI*r;
+  const off = c*(1-progress);
+  return `
+  <div class="icon-ring" style="width:${size}px;height:${size}px;">
+    <svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="#ffffff14" stroke-width="3" fill="none"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}" stroke-width="3" fill="none"
+        stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round" style="transition:stroke-dashoffset .6s ease"/>
+    </svg>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+      ${typeIcon(type, overdue ? "#E2725B" : getComputedColorFallback(type))}
+    </div>
+  </div>`;
+}
+function getComputedColorFallback(type){
+  return type==="water" ? "#5B9C9C" : type==="feed" ? "#D4A24C" : "#A8C256";
+}
+
+/* ---------------- state ---------------- */
+let plants = loadPlants();
+let now = Date.now();
+let notifPerm = (typeof Notification !== "undefined") ? Notification.permission : "unsupported";
+let modalState = null; // {kind:'addPlant'} | {kind:'addTask', plantId}
+const notifiedRef = {};
+
+function persist(){ savePlants(plants); }
+
+function requestNotif(){
+  if(typeof Notification === "undefined") return;
+  Notification.requestPermission().then(p=>{ notifPerm=p; render(); });
+}
+function addPlant(name){
+  if(!name.trim()) return;
+  plants.push({id:uid(), name:name.trim(), tasks:[]});
+  persist(); render();
+}
+function deletePlant(id){ plants = plants.filter(p=>p.id!==id); persist(); render(); }
+function addTask(plantId, task){
+  const p = plants.find(p=>p.id===plantId);
+  if(p) p.tasks.push({...task, id:uid()});
+  persist(); render();
+}
+function deleteTask(plantId, taskId){
+  const p = plants.find(p=>p.id===plantId);
+  if(p) p.tasks = p.tasks.filter(t=>t.id!==taskId);
+  persist(); render();
+}
+function markDone(plantId, taskId){
+  const p = plants.find(p=>p.id===plantId);
+  const t = p && p.tasks.find(t=>t.id===taskId);
+  if(t){ const s = computeStatus(t, now); t.ackIndex = Math.max(s.occurrenceIndex, 0); }
+  persist(); render();
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  const flat = [];
+  plants.forEach(p => p.tasks.forEach(t => flat.push({plant:p, task:t, status: computeStatus(t, now)})));
+  flat.sort((a,b)=>a.status.nextTime - b.status.nextTime);
+  const hero = flat.find(f=>f.status.status==="due") || flat[0];
+
+  let html = `
+  <header>
+    <div class="brand">${ICONS.leaf}<h1>باغچه‌ی من</h1></div>
+    <button class="notif-btn ${notifPerm==='granted'?'on':''}" onclick="requestNotif()">
+      ${notifPerm==='granted'?ICONS.bell('var(--lime)'):ICONS.bellOff('var(--text-dim)')}
+      <span>${notifPerm==='granted'?'یادآور فعال':'فعال‌سازی یادآور'}</span>
+    </button>
+  </header>`;
+
+  if(notifPerm !== "granted"){
+    html += `<div class="notice">برای دریافت هشدار، یادآور را فعال کن. توجه: تا وقتی این را به اپ اندروید تبدیل نکرده‌ای، هشدار فقط وقتی این صفحه باز است کار می‌کند.</div>`;
+  }
+
+  if(hero){
+    const overdue = hero.status.status === "due";
+    html += `
+    <div class="hero">
+      <div class="hero-label">${overdue ? "الان وقتشه" : "بعدی در نوبت"}</div>
+      <div class="hero-body">
+        ${ringSvg(hero.task.type, ringProgress(hero.task, now), 62, overdue)}
+        <div>
+          <div class="hero-plant">${escapeHtml(hero.plant.name)}</div>
+          <div class="hero-task">${TASK_TYPES[hero.task.type].label}${hero.task.customLabel ? " · "+escapeHtml(hero.task.customLabel) : ""}</div>
+          <div class="hero-count" style="color:${overdue?'var(--bad)':'var(--text-dim)'}">
+            ${overdue ? formatDuration(now-hero.status.occurrenceTime)+" دیر شده" : formatDuration(hero.status.nextTime-now)+" دیگر"}
+          </div>
+          <div class="hero-when">سررسید: ${formatJalali(new Date(overdue?hero.status.occurrenceTime:hero.status.nextTime))}</div>
+        </div>
+      </div>
+      ${overdue ? `<button class="done-btn" onclick="markDone('${hero.plant.id}','${hero.task.id}')">${ICONS.check('#12180F')} انجام شد</button>` : ``}
+    </div>`;
+  }
+
+  html += `<div class="plants">`;
+  if(plants.length===0){
+    html += `<div class="empty">${ICONS.leaf}<br/>هنوز گیاهی اضافه نکردی.<br/>اولین گیاهت رو اضافه کن و براش برنامه بریز.</div>`;
+  }
+  plants.forEach(p=>{
+    html += `<div class="plant-card">
+      <div class="plant-head">
+        <div class="plant-name">${ICONS.sprout('#A8C256')} ${escapeHtml(p.name)}</div>
+        <div class="row-btns">
+          <button class="chip-btn" onclick="openAddTask('${p.id}')">${ICONS.plus('#EDEAE0')} کار جدید</button>
+          <button class="chip-btn" onclick="openEditPlant('${p.id}')">${ICONS.edit('#EDEAE0')}</button>
+          <button class="chip-btn danger" onclick="deletePlant('${p.id}')">${ICONS.trash('#E2725B')}</button>
+        </div>
+      </div>`;
+    if(p.tasks.length===0){
+      html += `<div style="font-size:12.5px;color:var(--text-faint);padding:6px 2px;">کاری تعریف نشده</div>`;
+    } else {
+      const sorted = p.tasks.slice().sort((a,b)=>computeStatus(a,now).nextTime - computeStatus(b,now).nextTime);
+      sorted.forEach(t=>{
+        const s = computeStatus(t, now);
+        const overdue = s.status==="due";
+        html += `<div class="task-row">
+          ${ringSvg(t.type, ringProgress(t,now), 36, overdue)}
+          <div class="task-info">
+            <div class="task-label">${TASK_TYPES[t.type].label}${t.customLabel ? " · "+escapeHtml(t.customLabel):""}</div>
+            <div class="task-freq">هر ${toFa(t.intervalValue)} ${t.intervalUnit==='hour'?'ساعت':'روز'}</div>
+            <div class="task-when">${overdue? 'سررسید: ' : 'بعدی: '}${formatJalali(new Date(overdue?s.occurrenceTime:s.nextTime))}</div>
+          </div>
+          <div class="task-count" style="color:${overdue?'var(--bad)':'var(--text-dim)'}">
+            ${overdue ? formatDuration(now-s.occurrenceTime)+" دیر" : formatDuration(s.nextTime-now)}
+          </div>
+          <div style="display:flex;gap:5px;">
+            <button class="ghost-btn" onclick="openEditTask('${p.id}','${t.id}')">${ICONS.edit('#9FAE8C')}</button>
+            ${overdue
+              ? `<button class="check-btn" onclick="markDone('${p.id}','${t.id}')">${ICONS.check('#12180F')}</button>`
+              : `<button class="ghost-btn" onclick="deleteTask('${p.id}','${t.id}')">${ICONS.trash('#6E7C63')}</button>`}
+          </div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  html += `<button class="fab" onclick="openAddPlant()">${ICONS.plus('#12180F')} گیاه جدید</button>`;
+
+  html += renderModal();
+
+  document.getElementById("app").innerHTML = html;
+  pushScheduleToKodular();
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------------- modals ---------------- */
+function openAddPlant(){ modalState = {kind:"addPlant"}; render(); document.getElementById("newPlantName")?.focus(); }
+function openAddTask(plantId){
+  const n = new Date();
+  const jp = dateToJalaliParts(n);
+  modalState = {kind:"addTask", plantId, type:"water", customLabel:"", intervalValue:24, intervalUnit:"day",
+    jy:jp.jy, jm:jp.jm, jd:jp.jd, h:jp.h, min:jp.min};
+  render();
+}
+function openEditPlant(plantId){
+  const p = plants.find(p=>p.id===plantId);
+  if(!p) return;
+  modalState = {kind:"editPlant", plantId, name:p.name};
+  render();
+  document.getElementById("editPlantName")?.focus();
+}
+function openEditTask(plantId, taskId){
+  const p = plants.find(p=>p.id===plantId);
+  const t = p && p.tasks.find(t=>t.id===taskId);
+  if(!t) return;
+  const jp = dateToJalaliParts(new Date(t.startAt));
+  modalState = {kind:"editTask", plantId, taskId, type:t.type, customLabel:t.customLabel||"",
+    intervalValue:t.intervalValue, intervalUnit:t.intervalUnit,
+    jy:jp.jy, jm:jp.jm, jd:jp.jd, h:jp.h, min:jp.min};
+  render();
+}
+function closeModal(){ modalState = null; render(); }
+function setModal(patch){ modalState = {...modalState, ...patch}; render(); }
+
+function submitAddPlant(){
+  const el = document.getElementById("newPlantName");
+  addPlant(el.value);
+  modalState = null; render();
+}
+function submitEditPlant(){
+  const el = document.getElementById("editPlantName");
+  const m = modalState;
+  if(!el.value.trim()) return;
+  const p = plants.find(p=>p.id===m.plantId);
+  if(p) p.name = el.value.trim();
+  persist();
+  modalState = null; render();
+}
+function submitAddTask(){
+  const m = modalState;
+  if(!m || Number(m.intervalValue) <= 0) return;
+  const startAt = jalaliToDate(m.jy, m.jm, m.jd, Number(m.h), Number(m.min)).toISOString();
+  addTask(m.plantId, {
+    type:m.type, customLabel: m.type==="custom" ? m.customLabel.trim() : "",
+    intervalValue:Number(m.intervalValue), intervalUnit:m.intervalUnit,
+    startAt, ackIndex:-1,
+  });
+  modalState = null; render();
+}
+function submitEditTask(){
+  const m = modalState;
+  if(!m || Number(m.intervalValue) <= 0) return;
+  const p = plants.find(p=>p.id===m.plantId);
+  const t = p && p.tasks.find(t=>t.id===m.taskId);
+  if(!t) return;
+  const startAt = jalaliToDate(m.jy, m.jm, m.jd, Number(m.h), Number(m.min)).toISOString();
+  t.type = m.type;
+  t.customLabel = m.type==="custom" ? m.customLabel.trim() : "";
+  t.intervalValue = Number(m.intervalValue);
+  t.intervalUnit = m.intervalUnit;
+  t.startAt = startAt;
+  t.ackIndex = -1; // schedule changed, restart the cycle from the new start time
+  persist();
+  modalState = null; render();
+}
+
+function jalaliMonthDays(jy,jm){
+  if(jm<=6) return 31; if(jm<=11) return 30;
+  // esfand: 29 or 30 (leap) — check via jalCal
+  return jalCal(jy).leap===1 ? 30 : 29;
+}
+
+function renderModal(){
+  if(!modalState) return "";
+  if(modalState.kind==="addPlant"){
+    return `<div class="overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head"><span class="modal-title">افزودن گیاه</span><button class="ghost-btn" onclick="closeModal()">${ICONS.x('#9FAE8C')}</button></div>
+        <input id="newPlantName" class="input" placeholder="اسم گیاه، مثلاً پتوس گوشه‌ی هال" onkeydown="if(event.key==='Enter') submitAddPlant()"/>
+        <button class="primary-btn" onclick="submitAddPlant()">افزودن</button>
+      </div>
+    </div>`;
+  }
+  if(modalState.kind==="editPlant"){
+    const m = modalState;
+    return `<div class="overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head"><span class="modal-title">ویرایش گیاه</span><button class="ghost-btn" onclick="closeModal()">${ICONS.x('#9FAE8C')}</button></div>
+        <input id="editPlantName" class="input" value="${escapeHtml(m.name)}" onkeydown="if(event.key==='Enter') submitEditPlant()"/>
+        <button class="primary-btn" onclick="submitEditPlant()">ذخیره</button>
+      </div>
+    </div>`;
+  }
+  if(modalState.kind==="addTask" || modalState.kind==="editTask"){
+    const m = modalState;
+    const isEdit = modalState.kind==="editTask";
+    const years = []; for(let y=m.jy-1;y<=m.jy+2;y++) years.push(y);
+    const days = jalaliMonthDays(m.jy, m.jm);
+    const daysArr = Array.from({length:days},(_,i)=>i+1);
+    const hours = Array.from({length:24},(_,i)=>i);
+    const mins = [0,5,10,15,20,25,30,35,40,45,50,55];
+
+    return `<div class="overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head"><span class="modal-title">${isEdit?"ویرایش کار":"کار جدید"}</span><button class="ghost-btn" onclick="closeModal()">${ICONS.x('#9FAE8C')}</button></div>
+
+        <div class="type-row">
+          ${Object.entries(TASK_TYPES).map(([k,v])=>`
+            <button class="type-chip ${m.type===k?'active':''}" style="${m.type===k?`border-color:${getComputedColorFallback(k)};background:${getComputedColorFallback(k)}18;color:${getComputedColorFallback(k)}`:''}" onclick="setModal({type:'${k}'})">
+              ${typeIcon(k, m.type===k?getComputedColorFallback(k):'#9FAE8C')} ${v.label}
+            </button>`).join("")}
+        </div>
+
+        ${m.type==="custom" ? `<input class="input" placeholder="اسم کار، مثلاً چرخوندن گلدون" value="${escapeHtml(m.customLabel)}" oninput="setModal({customLabel:this.value})"/>` : ""}
+
+        <label class="field-label">تکرار هر</label>
+        <div style="display:flex;gap:8px;">
+          <input type="number" min="1" class="input" style="flex:1" value="${m.intervalValue}" oninput="setModal({intervalValue:this.value})"/>
+          <select class="input" style="flex:1" onchange="setModal({intervalUnit:this.value})">
+            <option value="hour" ${m.intervalUnit==='hour'?'selected':''}>ساعت</option>
+            <option value="day" ${m.intervalUnit==='day'?'selected':''}>روز</option>
+          </select>
+        </div>
+
+        <label class="field-label">شروع از (تاریخ شمسی)</label>
+        <div class="dt-grid">
+          <select class="input" onchange="setModal({jd:Number(this.value)})">
+            ${daysArr.map(d=>`<option value="${d}" ${d===m.jd?'selected':''}>${toFa(d)}</option>`).join("")}
+          </select>
+          <select class="input" onchange="setModal({jm:Number(this.value)})">
+            ${JMONTHS.map((mo,i)=>`<option value="${i+1}" ${i+1===m.jm?'selected':''}>${mo}</option>`).join("")}
+          </select>
+          <select class="input" onchange="setModal({jy:Number(this.value)})">
+            ${years.map(y=>`<option value="${y}" ${y===m.jy?'selected':''}>${toFa(y)}</option>`).join("")}
+          </select>
+        </div>
+        <label class="field-label">ساعت (به وقت گوشی)</label>
+        <div class="dt-grid time">
+          <select class="input" onchange="setModal({h:Number(this.value)})">
+            ${hours.map(h=>`<option value="${h}" ${h===m.h?'selected':''}>${toFa(pad2(h))}</option>`).join("")}
+          </select>
+          <select class="input" onchange="setModal({min:Number(this.value)})">
+            ${mins.map(mi=>`<option value="${mi}" ${mi===m.min?'selected':''}>${toFa(pad2(mi))}</option>`).join("")}
+          </select>
+        </div>
+
+        <button class="primary-btn" onclick="${isEdit?'submitEditTask()':'submitAddTask()'}">${isEdit?"ذخیره‌ی تغییرات":"ذخیره‌ی برنامه"}</button>
+      </div>
+    </div>`;
+  }
+  return "";
+}
+
+/* ---------------- bridge to Kodular (WebViewString) ---------------- */
+// Kodular's WebViewer component can read window.AppInventor.setWebViewString(...)
+// via the "WebViewer1.WebViewString" block. We refresh this on every render so the
+// native app side can always pull the latest full schedule and set real Android alarms.
+function pushScheduleToKodular(){
+  if(!window.AppInventor || typeof window.AppInventor.setWebViewString !== "function") return;
+  const list = [];
+  plants.forEach(p=>{
+    p.tasks.forEach(t=>{
+      const s = computeStatus(t, now);
+      list.push({
+        plantId: p.id,
+        taskId: t.id,
+        plantName: p.name,
+        taskLabel: TASK_TYPES[t.type].label + (t.customLabel ? " · "+t.customLabel : ""),
+        nextDue: s.status==="due" ? s.occurrenceTime : s.nextTime,
+        overdue: s.status==="due",
+        intervalMs: intervalMs(t.intervalValue, t.intervalUnit),
+      });
+    });
+  });
+  try{ window.AppInventor.setWebViewString(JSON.stringify(list)); }catch(e){}
+}
+function tick(){
+  now = Date.now();
+  plants.forEach(p=>{
+    p.tasks.forEach(t=>{
+      const s = computeStatus(t, now);
+      if(s.status==="due"){
+        const key = t.id+":"+s.occurrenceIndex;
+        const last = notifiedRef[key];
+        if(!last || now-last > 10*60000){
+          notifiedRef[key] = now;
+          beep();
+          if(notifPerm==="granted"){
+            try{ new Notification(`وقت ${TASK_TYPES[t.type].label} ${p.name} شد 🌱`, {body: t.customLabel || TASK_TYPES[t.type].label}); }catch(e){}
+          }
+        }
+      }
+    });
+  });
+  render();
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  render();
+  setInterval(tick, 15000);
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  }
+});
+</script>
+</body>
+</html>
