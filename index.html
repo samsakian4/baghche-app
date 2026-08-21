@@ -264,33 +264,120 @@ function getComputedColorFallback(type){
   return type==="water" ? "#5B9C9C" : type==="feed" ? "#D4A24C" : "#A8C256";
 }
 
+/* ---------------- Supabase Web Push sync ---------------- */
+const SUPABASE_URL = "https://zysslfodciyepweaifxp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_sH4CV3IZ5yCKkh88Cpg1jA_OyiO0TmZ";
+const VAPID_PUBLIC_KEY = "BFYWgSN9a4iXeQ7nvHxzktu2jN5qzkGwBgg4JtbWcLaI8luobNAWtEOUm6qH2US33tA7BKRucbfzXjLn_Uf9FCI";
+
+function urlBase64ToUint8Array(base64String){
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const out = new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+async function supabaseRequest(path, options={}){
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers||{}),
+    },
+  });
+}
+async function syncTaskToSupabase(plant, task){
+  try{
+    await supabaseRequest("tasks", {
+      method: "POST",
+      headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify([{
+        id: task.id,
+        plant_name: plant.name,
+        task_label: TASK_TYPES[task.type].label + (task.customLabel ? " · "+task.customLabel : ""),
+        interval_ms: intervalMs(task.intervalValue, task.intervalUnit),
+        start_at: task.startAt,
+        ack_index: task.ackIndex ?? -1,
+        last_notified_occurrence: -1,
+      }]),
+    });
+  }catch(e){}
+}
+async function deleteTaskFromSupabase(taskId){
+  try{ await supabaseRequest(`tasks?id=eq.${taskId}`, { method:"DELETE" }); }catch(e){}
+}
+async function subscribeToPush(){
+  if(!("serviceWorker" in navigator) || !("PushManager" in window)){
+    notifPerm = "unsupported"; render(); return;
+  }
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+    const j = sub.toJSON();
+    await supabaseRequest("push_subscriptions", {
+      method: "POST",
+      headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify([{ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }]),
+    });
+    notifPerm = "granted";
+  }catch(e){
+    console.error("push subscribe failed", e);
+    notifPerm = "denied";
+  }
+  render();
+}
+async function checkExistingPushSubscription(){
+  if(!("serviceWorker" in navigator) || !("PushManager" in window)){ notifPerm="unsupported"; render(); return; }
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    notifPerm = sub ? "granted" : "default";
+  }catch(e){ notifPerm = "default"; }
+  render();
+}
+
 /* ---------------- state ---------------- */
 let plants = loadPlants();
 let now = Date.now();
-let notifPerm = (typeof Notification !== "undefined") ? Notification.permission : "unsupported";
+let notifPerm = "default";
 let modalState = null; // {kind:'addPlant'} | {kind:'addTask', plantId}
 const notifiedRef = {};
 
 function persist(){ savePlants(plants); }
 
-function requestNotif(){
-  if(typeof Notification === "undefined") return;
-  Notification.requestPermission().then(p=>{ notifPerm=p; render(); });
-}
+function requestNotif(){ subscribeToPush(); }
+
 function addPlant(name){
   if(!name.trim()) return;
   plants.push({id:uid(), name:name.trim(), tasks:[]});
   persist(); render();
 }
-function deletePlant(id){ plants = plants.filter(p=>p.id!==id); persist(); render(); }
+function deletePlant(id){
+  const p = plants.find(p=>p.id===id);
+  if(p) p.tasks.forEach(t=>deleteTaskFromSupabase(t.id));
+  plants = plants.filter(p=>p.id!==id); persist(); render();
+}
 function addTask(plantId, task){
   const p = plants.find(p=>p.id===plantId);
-  if(p) p.tasks.push({...task, id:uid()});
+  if(p){
+    const newTask = {...task, id:uid()};
+    p.tasks.push(newTask);
+    syncTaskToSupabase(p, newTask);
+  }
   persist(); render();
 }
 function deleteTask(plantId, taskId){
   const p = plants.find(p=>p.id===plantId);
   if(p) p.tasks = p.tasks.filter(t=>t.id!==taskId);
+  deleteTaskFromSupabase(taskId);
   persist(); render();
 }
 function markDone(plantId, taskId){
@@ -317,7 +404,7 @@ function render(){
   </header>`;
 
   if(notifPerm !== "granted"){
-    html += `<div class="notice">برای دریافت هشدار، یادآور را فعال کن. توجه: تا وقتی این را به اپ اندروید تبدیل نکرده‌ای، هشدار فقط وقتی این صفحه باز است کار می‌کند.</div>`;
+    html += `<div class="notice">برای دریافت هشدار حتی وقتی اپ بسته‌ست، دکمه‌ی «فعال‌سازی یادآور» رو بزن و اجازه‌ی نوتیفیکیشن رو تأیید کن.</div>`;
   }
 
   if(hero){
@@ -433,7 +520,10 @@ function submitEditPlant(){
   const m = modalState;
   if(!el.value.trim()) return;
   const p = plants.find(p=>p.id===m.plantId);
-  if(p) p.name = el.value.trim();
+  if(p){
+    p.name = el.value.trim();
+    p.tasks.forEach(t=>syncTaskToSupabase(p, t));
+  }
   persist();
   modalState = null; render();
 }
@@ -461,6 +551,7 @@ function submitEditTask(){
   t.intervalUnit = m.intervalUnit;
   t.startAt = startAt;
   t.ackIndex = -1; // schedule changed, restart the cycle from the new start time
+  syncTaskToSupabase(p, t);
   persist();
   modalState = null; render();
 }
@@ -585,10 +676,7 @@ function tick(){
         const last = notifiedRef[key];
         if(!last || now-last > 10*60000){
           notifiedRef[key] = now;
-          beep();
-          if(notifPerm==="granted"){
-            try{ new Notification(`وقت ${TASK_TYPES[t.type].label} ${p.name} شد 🌱`, {body: t.customLabel || TASK_TYPES[t.type].label}); }catch(e){}
-          }
+          beep(); // small in-tab audio cue; the real notification comes from the server push
         }
       }
     });
@@ -596,12 +684,13 @@ function tick(){
   render();
 }
 
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", async ()=>{
   render();
   setInterval(tick, 15000);
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("sw.js").catch(()=>{});
+    try{ await navigator.serviceWorker.register("sw.js"); }catch(e){}
   }
+  checkExistingPushSubscription();
 });
 </script>
 </body>
