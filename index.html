@@ -94,6 +94,10 @@
   .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
   .modal-title{font-size:16px; font-weight:700;}
   .field-label{font-size:12px; color:var(--text-dim); margin-bottom:5px; display:block;}
+  .field-hint{font-size:11px; color:var(--text-faint); margin:-4px 0 11px;}
+  .preset-row{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+  .preset-chip{border:1px solid #ffffff20; border-radius:20px; padding:6px 12px; font-size:12px; background:transparent; color:var(--text-dim);}
+  .preset-chip.active{border-color:var(--lime); background:#A8C25622; color:var(--lime); font-weight:700;}
   .input{width:100%; background:#ffffff0a; border:1px solid #ffffff18; color:var(--text); border-radius:11px; padding:11px 12px; font-size:14px; margin-bottom:11px; outline:none;}
   .type-row{display:flex; gap:8px; margin-bottom:12px;}
   .type-chip{flex:1; display:flex; align-items:center; justify-content:center; gap:5px; border:1px solid #ffffff20; border-radius:11px; padding:9px 4px; font-size:12.5px; background:transparent; color:var(--text-dim);}
@@ -180,7 +184,17 @@ const TASK_TYPES = {
   feed:{label:"کوددهی", color:"var(--feed)"},
   custom:{label:"سفارشی", color:"var(--lime)"},
 };
-function intervalMs(v,u){ return (Number(v)||0) * (u==="hour" ? 3600000 : 86400000); }
+const INTERVAL_PRESETS = [
+  {label:"۵ دقیقه", value:5, unit:"minute"},
+  {label:"۱ ساعت", value:1, unit:"hour"},
+  {label:"۸ ساعت", value:8, unit:"hour"},
+  {label:"۱۲ ساعت", value:12, unit:"hour"},
+  {label:"۱ روز", value:1, unit:"day"},
+  {label:"۲ روز", value:2, unit:"day"},
+  {label:"۳ روز", value:3, unit:"day"},
+  {label:"۱ هفته", value:7, unit:"day"},
+];
+function intervalMs(v,u){ return (Number(v)||0) * (u==="minute" ? 60000 : u==="hour" ? 3600000 : 86400000); }
 function computeStatus(task, now){
   const anchor = new Date(task.startAt).getTime();
   const ms = intervalMs(task.intervalValue, task.intervalUnit);
@@ -452,7 +466,7 @@ function render(){
           ${ringSvg(t.type, ringProgress(t,now), 36, overdue)}
           <div class="task-info">
             <div class="task-label">${TASK_TYPES[t.type].label}${t.customLabel ? " · "+escapeHtml(t.customLabel):""}</div>
-            <div class="task-freq">هر ${toFa(t.intervalValue)} ${t.intervalUnit==='hour'?'ساعت':'روز'}</div>
+            <div class="task-freq">هر ${toFa(t.intervalValue)} ${t.intervalUnit==='minute'?'دقیقه':t.intervalUnit==='hour'?'ساعت':'روز'}</div>
             <div class="task-when">${overdue? 'سررسید: ' : 'بعدی: '}${formatJalali(new Date(overdue?s.occurrenceTime:s.nextTime))}</div>
           </div>
           <div class="task-count" style="color:${overdue?'var(--bad)':'var(--text-dim)'}">
@@ -486,7 +500,7 @@ function openAddPlant(){ modalState = {kind:"addPlant"}; render(); document.getE
 function openAddTask(plantId){
   const n = new Date();
   const jp = dateToJalaliParts(n);
-  modalState = {kind:"addTask", plantId, type:"water", customLabel:"", intervalValue:24, intervalUnit:"day",
+  modalState = {kind:"addTask", plantId, type:"water", customLabel:"", intervalValue:1, intervalUnit:"day",
     jy:jp.jy, jm:jp.jm, jd:jp.jd, h:jp.h, min:jp.min};
   render();
 }
@@ -606,13 +620,20 @@ function renderModal(){
         ${m.type==="custom" ? `<input class="input" placeholder="اسم کار، مثلاً چرخوندن گلدون" value="${escapeHtml(m.customLabel)}" oninput="setModal({customLabel:this.value})"/>` : ""}
 
         <label class="field-label">تکرار هر</label>
+        <div class="preset-row">
+          ${INTERVAL_PRESETS.map(p=>`
+            <button class="preset-chip ${(m.intervalValue==p.value && m.intervalUnit===p.unit)?'active':''}"
+              onclick="setModal({intervalValue:${p.value}, intervalUnit:'${p.unit}'})">${p.label}</button>`).join("")}
+        </div>
         <div style="display:flex;gap:8px;">
           <input type="number" min="1" class="input" style="flex:1" value="${m.intervalValue}" oninput="setModal({intervalValue:this.value})"/>
           <select class="input" style="flex:1" onchange="setModal({intervalUnit:this.value})">
+            <option value="minute" ${m.intervalUnit==='minute'?'selected':''}>دقیقه</option>
             <option value="hour" ${m.intervalUnit==='hour'?'selected':''}>ساعت</option>
             <option value="day" ${m.intervalUnit==='day'?'selected':''}>روز</option>
           </select>
         </div>
+        <div class="field-hint">یا خودت هر عدد و واحدی که می‌خوای بذار</div>
 
         <label class="field-label">شروع از (تاریخ شمسی)</label>
         <div class="dt-grid">
@@ -643,29 +664,6 @@ function renderModal(){
   return "";
 }
 
-/* ---------------- bridge to Kodular (WebViewString) ---------------- */
-// Kodular's WebViewer component can read window.AppInventor.setWebViewString(...)
-// via the "WebViewer1.WebViewString" block. We refresh this on every render so the
-// native app side can always pull the latest full schedule and set real Android alarms.
-function pushScheduleToKodular(){
-  if(!window.AppInventor || typeof window.AppInventor.setWebViewString !== "function") return;
-  const list = [];
-  plants.forEach(p=>{
-    p.tasks.forEach(t=>{
-      const s = computeStatus(t, now);
-      list.push({
-        plantId: p.id,
-        taskId: t.id,
-        plantName: p.name,
-        taskLabel: TASK_TYPES[t.type].label + (t.customLabel ? " · "+t.customLabel : ""),
-        nextDue: s.status==="due" ? s.occurrenceTime : s.nextTime,
-        overdue: s.status==="due",
-        intervalMs: intervalMs(t.intervalValue, t.intervalUnit),
-      });
-    });
-  });
-  try{ window.AppInventor.setWebViewString(JSON.stringify(list)); }catch(e){}
-}
 function tick(){
   now = Date.now();
   plants.forEach(p=>{
