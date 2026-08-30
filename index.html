@@ -324,10 +324,19 @@ async function deleteTaskFromSupabase(taskId){
 }
 async function subscribeToPush(){
   if(!("serviceWorker" in navigator) || !("PushManager" in window)){
-    notifPerm = "unsupported"; render(); return;
+    notifPerm = "unsupported"; render();
+    alert("مرورگرت از نوتیفیکیشن پشتیبانی نمی‌کنه.");
+    return;
+  }
+  if(typeof Notification !== "undefined" && Notification.permission === "denied"){
+    notifPerm = "denied"; render();
+    alert("اجازه‌ی نوتیفیکیشن برای این سایت قبلاً مسدود شده. برو تنظیمات کروم ← Site settings ← Notifications، این سایت رو پیدا کن و Allow کن. یا تنظیمات اندروید ← اپ‌ها ← Chrome ← Notifications رو چک کن.");
+    return;
   }
   try{
-    const reg = await navigator.serviceWorker.ready;
+    let reg = await navigator.serviceWorker.getRegistration();
+    if(!reg) reg = await navigator.serviceWorker.register("sw.js");
+    reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
     if(!sub){
       sub = await reg.pushManager.subscribe({
@@ -336,15 +345,20 @@ async function subscribeToPush(){
       });
     }
     const j = sub.toJSON();
-    await supabaseRequest("push_subscriptions", {
+    const res = await supabaseRequest("push_subscriptions", {
       method: "POST",
       headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
       body: JSON.stringify([{ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }]),
     });
+    if(!res.ok){
+      const errText = await res.text();
+      throw new Error("supabase save failed: " + res.status + " " + errText);
+    }
     notifPerm = "granted";
   }catch(e){
     console.error("push subscribe failed", e);
     notifPerm = "denied";
+    alert("فعال‌سازی یادآور با خطا مواجه شد:\n" + (e && e.message ? e.message : e));
   }
   render();
 }
