@@ -345,7 +345,7 @@ async function subscribeToPush(){
       });
     }
     const j = sub.toJSON();
-    const res = await supabaseRequest("push_subscriptions", {
+    const res = await supabaseRequest("push_subscriptions?on_conflict=endpoint", {
       method: "POST",
       headers: { "Prefer": "resolution=merge-duplicates,return=minimal" },
       body: JSON.stringify([{ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }]),
